@@ -1,0 +1,5 @@
+[[extensions]]
+type = "theme"
+name = "timer-widget"
+handle = "timer-widget"
+extension_points = ["product", "product_template", "collection", "index", "page"]

@@ -1,34 +1,55 @@
 {% comment %}
-Timer Widget Block - This goes in blocks/timer-widget.liquid
+Timer Widget Block - This loads the Preact widget on product pages
 {% endcomment %}
 
-<div class="timer-widget-container" {{ block.shopify_attributes }}>
-  {% if block.settings.show_timer %}
-    
+{% if block.settings.show_timer %}
+  <div class="timer-widget-container" {{ block.shopify_attributes }}>
     {% comment %} Title Section {% endcomment %}
     {% if block.settings.timer_title != blank %}
       <h3 class="timer-title">{{ block.settings.timer_title }}</h3>
     {% endif %}
 
-    {% comment %} Timer Container {% endcomment %}
-    <div id="countdown-timer-{{ block.id }}" 
-         class="countdown-timer"
-         data-end-date="{{ block.settings.end_date }}"
-         data-message="{{ block.settings.timer_message }}">
-      <div class="timer-loading">⏰ Loading countdown...</div>
+    {% comment %} Preact Widget Container {% endcomment %}
+    <div id="countdown-timer-{{ block.id }}" class="countdown-timer-container">
+      <!-- Preact widget will be rendered here -->
     </div>
+    
+    {% comment %} Load the Timer Widget CSS and Script {% endcomment %}
+    <link rel="stylesheet" href="{{ 'timer-widget.css' | asset_url }}">
+    <script>
+      // Simple script loader for timer widget
+      (function() {
+        console.log('🔧 Timer Widget Block Loading...');
+        
+        // Load the main timer widget script
+        const script = document.createElement('script');
+        script.src = "{{ 'index.js' | asset_url }}";
+        script.defer = true;
+        script.onload = function() {
+          console.log('✅ Timer Widget Script Loaded Successfully');
+          // Initialize the widget after script loads
+          if (window.initializeTimerWidget) {
+            console.log('🔧 Calling initializeTimerWidget...');
+            window.initializeTimerWidget();
+          }
+        };
+        script.onerror = function() {
+          console.error('❌ Failed to load Timer Widget Script');
+        };
+        document.head.appendChild(script);
+      })();
+    </script>
 
     {% comment %} Description {% endcomment %}
     {% if block.settings.description != blank %}
       <p class="timer-description">{{ block.settings.description }}</p>
     {% endif %}
-
-  {% else %}
-    <div class="timer-disabled">
-      <p>Timer is currently disabled. Enable it in block settings.</p>
-    </div>
-  {% endif %}
-</div>
+  </div>
+{% else %}
+  <div class="timer-disabled" {{ block.shopify_attributes }}>
+    <p>Timer is currently disabled. Enable it in block settings.</p>
+  </div>
+{% endif %}
 
 <style>
   .timer-widget-container {
@@ -44,212 +65,11 @@ Timer Widget Block - This goes in blocks/timer-widget.liquid
     font-weight: bold;
   }
 
-  .countdown-timer {
-    background: {{ block.settings.bg_color | default: '#fff3cd' }};
-    border: 2px solid {{ block.settings.border_color | default: '#ffc107' }};
-    border-radius: 8px;
-    padding: 20px;
-    text-align: center;
-    margin: 10px 0;
-  }
-
-  .timer-display {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 15px;
-    flex-wrap: wrap;
-    margin: 10px 0;
-  }
-
-  .timer-unit {
-    background: {{ block.settings.unit_bg | default: '#ffc107' }};
-    color: {{ block.settings.unit_text | default: '#000' }};
-    padding: 12px 16px;
-    border-radius: 6px;
-    min-width: 65px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-  }
-
-  .timer-number {
-    display: block;
-    font-size: 28px;
-    font-weight: bold;
-    line-height: 1;
-    margin-bottom: 4px;
-  }
-
-  .timer-label {
-    display: block;
-    font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    opacity: 0.8;
-  }
-
-  .timer-message {
-    font-size: 18px;
-    font-weight: 600;
-    margin-bottom: 15px;
-    color: {{ block.settings.message_color | default: '#856404' }};
-  }
-
-  .timer-expired {
-    background: #f8d7da !important;
-    border-color: #dc3545 !important;
-    color: #721c24 !important;
-  }
-
-  .timer-expired .timer-unit {
-    background: #dc3545 !important;
-    color: white !important;
-  }
-
-  /* Urgency styles */
-  .timer-urgent {
-    animation: pulse-urgent 1.5s infinite;
-    border-color: #dc3545 !important;
-  }
-
-  @keyframes pulse-urgent {
-    0% { box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.7); }
-    70% { box-shadow: 0 0 0 10px rgba(220, 53, 69, 0); }
-    100% { box-shadow: 0 0 0 0 rgba(220, 53, 69, 0); }
-  }
-
-  .urgency-banner {
-    background: linear-gradient(45deg, #ff6b6b, #ee5a52);
-    color: white;
-    padding: 8px 15px;
-    border-radius: 20px;
-    font-weight: bold;
-    margin: 10px 0;
-    animation: shake 0.5s infinite alternate;
-    text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
-  }
-
-  @keyframes shake {
-    0% { transform: translateX(-2px); }
-    100% { transform: translateX(2px); }
-  }
-
-  /* Dynamic color support from API */
-  .timer-dynamic-color .timer-unit {
-    background: var(--timer-color) !important;
-    color: white !important;
-  }
-
-  /* Size variations */
-  .timer-size-small {
-    padding: 10px;
-  }
-  
-  .timer-size-small .timer-unit {
-    padding: 8px 12px;
-    min-width: 50px;
-  }
-  
-  .timer-size-small .timer-number {
-    font-size: 20px;
-  }
-  
-  .timer-size-small .timer-label {
-    font-size: 10px;
-  }
-
-  .timer-size-medium {
-    padding: 20px;
-  }
-
-  .timer-size-large {
-    padding: 30px;
-  }
-  
-  .timer-size-large .timer-unit {
-    padding: 20px 25px;
-    min-width: 80px;
-  }
-  
-  .timer-size-large .timer-number {
-    font-size: 36px;
-  }
-  
-  .timer-size-large .timer-label {
-    font-size: 14px;
-  }
-
-  /* Position styles */
-  .timer-position-top {
-    position: sticky;
-    top: 0;
-    z-index: 100;
-    margin-bottom: 20px;
-  }
-
-  .timer-position-bottom {
-    position: sticky;
-    bottom: 0;
-    z-index: 100;
-    margin-top: 20px;
-  }
-
-  .timer-position-floating {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    z-index: 1000;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-    max-width: 90vw;
-  }
-
-  /* Urgency effects */
-  .urgency-color-pulse {
-    animation: color-pulse 2s infinite;
-  }
-
-  @keyframes color-pulse {
-    0%, 100% { 
-      background-color: var(--timer-color);
-      border-color: var(--timer-color);
-    }
-    50% { 
-      background-color: #ff4757;
-      border-color: #ff4757;
-    }
-  }
-
-  .urgency-banner {
-    background: linear-gradient(45deg, #ff6b6b, #ee5a52);
-    color: white;
-    padding: 8px 15px;
-    border-radius: 20px;
-    font-weight: bold;
-    margin: 10px 0;
-    animation: shake 0.5s infinite alternate;
-    text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
-  }
-
-  .urgency-blinking {
-    animation: blink 1s infinite;
-  }
-
-  @keyframes blink {
-    0%, 50% { opacity: 1; }
-    51%, 100% { opacity: 0.3; }
-  }
-
   .timer-description {
     text-align: center;
     margin: 15px 0 0 0;
     font-size: {{ block.settings.desc_size | default: 14 }}px;
     color: {{ block.settings.desc_color | default: '#666' }};
-  }
-
-  .timer-loading {
-    font-size: 16px;
-    color: #666;
-    font-style: italic;
   }
 
   .timer-disabled {
@@ -260,304 +80,7 @@ Timer Widget Block - This goes in blocks/timer-widget.liquid
     border-radius: 6px;
     color: #6c757d;
   }
-
-  /* Mobile Responsive */
-  @media (max-width: 768px) {
-    .timer-display {
-      gap: 8px;
-    }
-    
-    .timer-unit {
-      min-width: 55px;
-      padding: 10px 12px;
-    }
-    
-    .timer-number {
-      font-size: 22px;
-    }
-
-    .timer-title {
-      font-size: 20px;
-    }
-  }
-
-  @media (max-width: 480px) {
-    .timer-display {
-      gap: 5px;
-    }
-    
-    .timer-unit {
-      min-width: 45px;
-      padding: 8px 10px;
-    }
-    
-    .timer-number {
-      font-size: 18px;
-    }
-  }
 </style>
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-  const timerId = 'countdown-timer-{{ block.id }}';
-  const timerElement = document.getElementById(timerId);
-  
-  if (!timerElement) {
-    console.log('Timer element not found:', timerId);
-    return;
-  }
-  
-  const SHOP_DOMAIN = "helixo-machine-test.myshopify.com";
-  const fallbackEndDate = timerElement.getAttribute('data-end-date');
-  const fallbackMessage = timerElement.getAttribute('data-message') || 'Time remaining:';
-  
-  let countdownInterval;
-  let timerData = null;
-  
-  // Function to fetch timer from API
-  async function fetchTimerData() {
-    try {
-      timerElement.innerHTML = '<div class="timer-loading">🔄 Loading timer...</div>';
-      
-      // Try to fetch from your API
-      const response = await fetch(`/api/timers?shopDomain=${SHOP_DOMAIN}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        }
-      });
-      
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      
-      const data = await response.json();
-      console.log('API Response:', data);
-      
-      if (data.success && data.timers && data.timers.length > 0) {
-        // Filter for active timers
-        const now = new Date();
-        const activeTimers = data.timers.filter(timer => {
-          const startDate = new Date(timer.startDate);
-          const endDate = new Date(timer.endDate);
-          // Timer is active if current time is between start and end
-          return now >= startDate && now <= endDate;
-        });
-        
-        console.log('Active timers found:', activeTimers.length);
-        
-        if (activeTimers.length > 0) {
-          // Get the first active timer (or you could prioritize by urgency)
-          const timer = activeTimers[0];
-          
-          timerData = {
-            endDate: new Date(timer.endDate),
-            startDate: new Date(timer.startDate),
-            description: timer.description || 'Special Offer',
-            displayOptions: timer.displayOptions || {},
-            urgencySettings: timer.urgencySettings || {}
-          };
-          
-          console.log('Using active timer:', timerData);
-          
-          // Apply display settings
-          applyDisplaySettings(timerData.displayOptions);
-          
-          startCountdown();
-          return;
-        } else {
-          console.log('No active timers found (outside time range)');
-        }
-      }
-      
-      // Fallback to manual settings if no active API timer
-      throw new Error('No active timers found');
-      
-    } catch (error) {
-      console.log('API fetch failed, using fallback:', error);
-      
-      // Use fallback from block settings
-      if (fallbackEndDate && fallbackEndDate.trim() !== '') {
-        try {
-          const fallbackDate = new Date(fallbackEndDate);
-          const now = new Date();
-          
-          if (!isNaN(fallbackDate.getTime()) && fallbackDate > now) {
-            timerData = {
-              endDate: fallbackDate,
-              startDate: now, // Use current time as start for fallback
-              description: fallbackMessage,
-              displayOptions: { 
-                color: '#ffc107',
-                size: 'medium',
-                position: 'default'
-              },
-              urgencySettings: {
-                enableBanner: 'color pulse',
-                warningTimeMinutes: 5
-              }
-            };
-            
-            console.log('Using fallback timer:', timerData);
-            applyDisplaySettings(timerData.displayOptions);
-            startCountdown();
-            return;
-          }
-        } catch (e) {
-          console.error('Fallback date parsing error:', e);
-        }
-      }
-      
-      timerElement.innerHTML = '<div class="timer-loading">⚠️ No active timer found. Please check your settings or create an active timer.</div>';
-    }
-  }
-  
-  // Function to apply display settings
-  function applyDisplaySettings(displayOptions) {
-    if (!displayOptions) return;
-    
-    // Apply dynamic color
-    if (displayOptions.color) {
-      timerElement.style.setProperty('--timer-color', displayOptions.color);
-      timerElement.classList.add('timer-dynamic-color');
-    }
-    
-    // Apply size
-    const sizeClass = `timer-size-${displayOptions.size || 'medium'}`;
-    timerElement.className = timerElement.className.replace(/timer-size-\w+/g, '');
-    timerElement.classList.add(sizeClass);
-    
-    // Apply position
-    const positionClass = `timer-position-${displayOptions.position || 'default'}`;
-    if (displayOptions.position && displayOptions.position !== 'default') {
-      timerElement.className = timerElement.className.replace(/timer-position-\w+/g, '');
-      timerElement.classList.add(positionClass);
-    }
-  }
-  
-  function startCountdown() {
-    if (!timerData) return;
-    
-    function updateTimer() {
-      const now = new Date();
-      const timeLeft = timerData.endDate.getTime() - now.getTime();
-      
-      // Check if timer has expired
-      if (timeLeft <= 0) {
-        clearInterval(countdownInterval);
-        timerElement.classList.add('timer-expired');
-        timerElement.innerHTML = `
-          <div class="timer-message">⏰ Timer Expired!</div>
-          <div class="timer-display">
-            <div class="timer-unit">
-              <span class="timer-number">--</span>
-              <span class="timer-label">EXPIRED</span>
-            </div>
-          </div>
-        `;
-        
-        // Hide timer after expiry (remove from DOM)
-        setTimeout(() => {
-          timerElement.style.display = 'none';
-        }, 3000); // Show expired message for 3 seconds then hide
-        return;
-      }
-      
-      // Check urgency settings
-      const urgencyThreshold = (timerData.urgencySettings.warningTimeMinutes || 5) * 60 * 1000;
-      const isUrgent = timeLeft <= urgencyThreshold && timeLeft > 0;
-      
-      // Apply urgency effects
-      applyUrgencyEffects(isUrgent, timeLeft);
-      
-      // Calculate time units
-      const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
-      const hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-      const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
-      const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
-      
-      // Build HTML with description from API
-      const message = timerData.description || 'Special offer ends in:';
-      let html = `<div class="timer-message">${message}</div>`;
-      
-      // Add urgency banner if enabled and urgent
-      if (isUrgent && timerData.urgencySettings.enableBanner && timerData.urgencySettings.enableBanner.includes('banner')) {
-        html += `<div class="urgency-banner">🚨 Hurry! Only ${minutes}m ${seconds}s left!</div>`;
-      }
-      
-      html += '<div class="timer-display">';
-      
-      if (days > 0) {
-        html += `
-          <div class="timer-unit">
-            <span class="timer-number">${days}</span>
-            <span class="timer-label">DAYS</span>
-          </div>
-        `;
-      }
-      
-      html += `
-        <div class="timer-unit">
-          <span class="timer-number">${hours.toString().padStart(2, '0')}</span>
-          <span class="timer-label">HOURS</span>
-        </div>
-        <div class="timer-unit">
-          <span class="timer-number">${minutes.toString().padStart(2, '0')}</span>
-          <span class="timer-label">MINS</span>
-        </div>
-        <div class="timer-unit">
-          <span class="timer-number">${seconds.toString().padStart(2, '0')}</span>
-          <span class="timer-label">SECS</span>
-        </div>
-      </div>`;
-      
-      timerElement.innerHTML = html;
-    }
-    
-    // Start the countdown
-    updateTimer();
-    countdownInterval = setInterval(updateTimer, 1000);
-  }
-  
-  // Function to apply urgency effects
-  function applyUrgencyEffects(isUrgent, timeLeft) {
-    if (!isUrgent) {
-      // Remove all urgency classes
-      timerElement.classList.remove('urgency-color-pulse', 'urgency-blinking', 'timer-urgent');
-      return;
-    }
-    
-    const urgencyType = timerData.urgencySettings.enableBanner || 'color pulse';
-    
-    // Remove existing urgency classes
-    timerElement.classList.remove('urgency-color-pulse', 'urgency-blinking', 'timer-urgent');
-    
-    // Apply specific urgency effect
-    if (urgencyType.includes('color pulse')) {
-      timerElement.classList.add('urgency-color-pulse');
-    }
-    
-    if (urgencyType.includes('blinking')) {
-      timerElement.classList.add('urgency-blinking');
-    }
-    
-    // Always add general urgent class for additional styling
-    timerElement.classList.add('timer-urgent');
-    
-    console.log(`Urgency active: ${Math.floor(timeLeft / 60000)}m ${Math.floor((timeLeft % 60000) / 1000)}s left`);
-  }
-  
-  // Initialize timer
-  fetchTimerData();
-  
-  // Cleanup function
-  window.addEventListener('beforeunload', function() {
-    if (countdownInterval) {
-      clearInterval(countdownInterval);
-    }
-  });
-});
-</script>
 
 {% schema %}
 {
@@ -599,6 +122,17 @@ document.addEventListener('DOMContentLoaded', function() {
       "label": "Description (optional)",
       "placeholder": "Add additional details about your offer...",
       "default": "Don't miss out on this amazing deal!"
+    },
+    {
+      "type": "header",
+      "content": "🔧 Advanced Configuration"
+    },
+    {
+      "type": "text",
+      "id": "api_url",
+      "label": "API Base URL (Advanced)",
+      "info": "Leave empty to use default. Only change if you have a custom backend URL.",
+      "placeholder": "https://your-backend-domain.com"
     },
     {
       "type": "header",

@@ -1,0 +1,173 @@
+/* 🔧 Timer Widget Styles for Preact Component */
+
+.countdown-timer-container {
+  margin: 15px 0;
+  padding: 0;
+}
+
+.timer-widget {
+  background: #fff3cd;
+  border: 2px solid #ffc107;
+  border-radius: 8px;
+  padding: 20px;
+  text-align: center;
+  margin: 10px 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.timer-widget.loading {
+  background: #f8f9fa;
+  border-color: #dee2e6;
+  color: #6c757d;
+  font-style: italic;
+}
+
+.timer-widget.error {
+  background: #f8d7da;
+  border-color: #dc3545;
+  color: #721c24;
+}
+
+.timer-widget.expired {
+  background: #f8d7da;
+  border-color: #dc3545;
+  color: #721c24;
+}
+
+.timer-widget.urgent {
+  animation: pulse-urgent 1.5s infinite;
+  border-color: #dc3545;
+}
+
+@keyframes pulse-urgent {
+  0% { box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.7); }
+  70% { box-shadow: 0 0 0 10px rgba(220, 53, 69, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(220, 53, 69, 0); }
+}
+
+.timer-message {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 15px;
+  color: #856404;
+}
+
+.timer-display {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 15px;
+  flex-wrap: wrap;
+  margin: 10px 0;
+}
+
+.timer-unit {
+  background: var(--timer-color, #ffc107);
+  color: #000;
+  padding: 12px 16px;
+  border-radius: 6px;
+  min-width: 65px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.timer-number {
+  display: block;
+  font-size: 28px;
+  font-weight: bold;
+  line-height: 1;
+  margin-bottom: 4px;
+}
+
+.timer-label {
+  display: block;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  opacity: 0.8;
+}
+
+.urgency-banner {
+  background: linear-gradient(45deg, #ff6b6b, #ee5a52);
+  color: white;
+  padding: 8px 15px;
+  border-radius: 20px;
+  font-weight: bold;
+  margin: 10px 0;
+  animation: shake 0.5s infinite alternate;
+  text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+}
+
+@keyframes shake {
+  0% { transform: translateX(-2px); }
+  100% { transform: translateX(2px); }
+}
+
+/* Size variations */
+.timer-widget[style*="--timer-size: small"] {
+  padding: 10px;
+}
+
+.timer-widget[style*="--timer-size: small"] .timer-unit {
+  padding: 8px 12px;
+  min-width: 50px;
+}
+
+.timer-widget[style*="--timer-size: small"] .timer-number {
+  font-size: 20px;
+}
+
+.timer-widget[style*="--timer-size: small"] .timer-label {
+  font-size: 10px;
+}
+
+.timer-widget[style*="--timer-size: large"] {
+  padding: 30px;
+}
+
+.timer-widget[style*="--timer-size: large"] .timer-unit {
+  padding: 20px 25px;
+  min-width: 80px;
+}
+
+.timer-widget[style*="--timer-size: large"] .timer-number {
+  font-size: 36px;
+}
+
+.timer-widget[style*="--timer-size: large"] .timer-label {
+  font-size: 14px;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .timer-display {
+    gap: 8px;
+  }
+  
+  .timer-unit {
+    min-width: 55px;
+    padding: 10px 12px;
+  }
+  
+  .timer-number {
+    font-size: 22px;
+  }
+  
+  .timer-message {
+    font-size: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .timer-display {
+    gap: 5px;
+  }
+  
+  .timer-unit {
+    min-width: 45px;
+    padding: 8px 10px;
+  }
+  
+  .timer-number {
+    font-size: 18px;
+  }
+}

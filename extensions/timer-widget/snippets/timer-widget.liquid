@@ -1,2 +1,26 @@
-<div id="timer-widget"></div>
-<script src="{{ 'index.js' | asset_url }}"></script>
+{% comment %}
+Timer Widget Snippet - Simple version that loads the Preact widget
+{% endcomment %}
+
+<div id="countdown-timer-widget" class="countdown-timer-container">
+  <!-- Preact widget will be rendered here -->
+</div>
+
+<script>
+  // Simple script loader for timer widget
+  (function() {
+    console.log('🔧 Timer Widget Snippet Loading...');
+    
+    // Load the main timer widget script
+    const script = document.createElement('script');
+    script.src = "{{ 'index.js' | asset_url }}";
+    script.defer = true;
+    script.onload = function() {
+      console.log('✅ Timer Widget Script Loaded Successfully');
+    };
+    script.onerror = function() {
+      console.error('❌ Failed to load Timer Widget Script');
+    };
+    document.head.appendChild(script);
+  })();
+</script>

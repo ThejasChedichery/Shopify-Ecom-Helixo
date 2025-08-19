@@ -1,0 +1,11 @@
+{
+  "timer": {
+    "title": "Countdown Timer",
+    "loading": "Loading timer...",
+    "expired": "Offer has expired",
+    "days": "Days",
+    "hours": "Hours",
+    "minutes": "Minutes", 
+    "seconds": "Seconds"
+  }
+}

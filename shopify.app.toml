@@ -3,7 +3,7 @@
 client_id = "4afa2b49e48eff59d6eae1d0a991792e"
 name = "Helixo-countdown-timer-app"
 handle = "helixo-countdown-timer-app"
-application_url = "https://hack-calculators-soap-evaluation.trycloudflare.com"
+application_url = "https://bacteria-dns-te-becomes.trycloudflare.com"
 embedded = true
 
 [build]
@@ -18,12 +18,12 @@ api_version = "2025-07"
 scopes = "write_products"
 
 [auth]
-redirect_urls = ["https://hack-calculators-soap-evaluation.trycloudflare.com/auth/callback", "https://hack-calculators-soap-evaluation.trycloudflare.com/auth/shopify/callback", "https://hack-calculators-soap-evaluation.trycloudflare.com/api/auth/callback"]
+redirect_urls = ["https://bacteria-dns-te-becomes.trycloudflare.com/auth/callback", "https://bacteria-dns-te-becomes.trycloudflare.com/auth/shopify/callback", "https://bacteria-dns-te-becomes.trycloudflare.com/api/auth/callback"]
 
 [pos]
 embedded = false
 
 [app_proxy]
-url = "https://hack-calculators-soap-evaluation.trycloudflare.com"
+url = "https://bacteria-dns-te-becomes.trycloudflare.com"
 prefix = "apps"
 subpath = "helixo-timer"

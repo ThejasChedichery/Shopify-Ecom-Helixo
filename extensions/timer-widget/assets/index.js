@@ -8,7 +8,8 @@ console.log('🔧 Timer Widget Script Loading...');
 // 🔧 Auto-discovery system for backend URL
 async function discoverBackendURL() {
   const knownPatterns = [
-    'hack-calculators-soap-evaluation', // CURRENT ACTIVE URL
+    'bacteria-dns-te-becomes', // CURRENT ACTIVE URL
+    'hack-calculators-soap-evaluation',
     'sean-possibly-pointed-married',
     'nails-carlo-pgp-nylon',
     'baking-edt-purpose-cited',
@@ -76,14 +77,30 @@ function fetchTimerData() {
     const shopDomain = window.location.hostname;
     console.log('🔧 Starting timer data fetch for domain:', shopDomain);
     
-    // Try App Proxy first (no CORS issues)
-    const appProxyUrl = `https://${shopDomain}/apps/helixo-timer/api/timers`;
-    console.log('🔍 Trying App Proxy URL:', appProxyUrl);
+    // First test App Proxy health endpoint
+    const appProxyHealthUrl = `https://${shopDomain}/apps/helixo-timer/api/health`;
+    console.log('🔍 Testing App Proxy health:', appProxyHealthUrl);
     
-    fetch(`${appProxyUrl}?shopDomain=${shopDomain}`, {
+    fetch(`${appProxyHealthUrl}?shopDomain=${shopDomain}`, {
       method: 'GET',
       headers: { 'Content-Type': 'application/json' },
       signal: AbortSignal.timeout(5000)
+    })
+    .then(response => {
+      if (response.ok) {
+        console.log('✅ App Proxy health check passed');
+        // Now try the actual timers endpoint
+        const appProxyUrl = `https://${shopDomain}/apps/helixo-timer/api/timers`;
+        console.log('🔍 Trying App Proxy URL:', appProxyUrl);
+        
+        return fetch(`${appProxyUrl}?shopDomain=${shopDomain}`, {
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json' },
+          signal: AbortSignal.timeout(10000) // Increased timeout
+        });
+      } else {
+        throw new Error(`App Proxy health check failed: ${response.status}`);
+      }
     })
     .then(response => {
       if (response.ok) {
@@ -101,7 +118,35 @@ function fetchTimerData() {
       // 🔧 PERMANENT SOLUTION: Try multiple backend URLs with JSONP
       console.log('🔧 Trying JSONP approach...');
       
+      // First try direct backend URL (current active URL)
+      const currentBackendUrl = 'https://bacteria-dns-te-becomes.trycloudflare.com';
+      console.log('🔧 Trying direct backend URL first:', currentBackendUrl);
+      
+      // Test direct backend health first
+      fetch(`${currentBackendUrl}/api/health?shopDomain=${shopDomain}`, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+        signal: AbortSignal.timeout(5000)
+      })
+      .then(response => {
+        if (response.ok) {
+          console.log('✅ Direct backend health check passed');
+          return response.json();
+        } else {
+          throw new Error(`Direct backend health check failed: ${response.status}`);
+        }
+      })
+      .then(healthData => {
+        console.log('✅ Backend is healthy:', healthData);
+        // Continue with JSONP approach
+      })
+      .catch(error => {
+        console.log('❌ Direct backend health check failed:', error.message);
+        // Continue with JSONP approach
+      });
+      
       const backendUrls = [
+        currentBackendUrl,
         'https://hack-calculators-soap-evaluation.trycloudflare.com',
         'https://look-supervision-extensive-jobs.trycloudflare.com',
         'https://ecommerce-functions-soc-rugs.trycloudflare.com',
@@ -338,23 +383,27 @@ class TimerWidgetManager {
     try {
       const data = await fetchTimerData();
       
-      if (data.success && data.timers && data.timers.length > 0) {
-        // Filter for active timers
-        const now = new Date();
-        const activeTimers = data.timers.filter(timer => {
-          const startDate = new Date(timer.startDate);
-          const endDate = new Date(timer.endDate);
-          return now >= startDate && now <= endDate;
-        });
-        
-        if (activeTimers.length > 0) {
-          this.showTimer(activeTimers[0]);
+              if (data.success && data.timers && data.timers.length > 0) {
+          // Filter for active timers
+          const now = new Date();
+          const activeTimers = data.timers.filter(timer => {
+            const startDate = new Date(timer.startDate);
+            const endDate = new Date(timer.endDate);
+            return now >= startDate && now <= endDate;
+          });
+          
+          console.log(`Found ${data.timers.length} total timers, ${activeTimers.length} active`);
+          
+          if (activeTimers.length > 0) {
+            this.showTimer(activeTimers[0]);
+          } else {
+            console.log('No active timers found, showing expired message');
+            this.showError('No active timers found');
+          }
         } else {
-          this.showError('No active timers found');
+          console.log('No timers available in database');
+          this.showError('No timers available');
         }
-      } else {
-        this.showError('No timers available');
-      }
     } catch (err) {
       console.error('Failed to load timer:', err);
       this.showError('Failed to load timer data');

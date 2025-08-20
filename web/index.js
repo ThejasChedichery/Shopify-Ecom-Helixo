@@ -3,6 +3,7 @@ import { readFileSync } from "fs";
 import express from "express";
 import serveStatic from "serve-static";
 import dotenv from "dotenv";
+import mongoose from "mongoose";
 dotenv.config();
 
 import shopify from "./shopify.js";
@@ -59,6 +60,107 @@ app.get("/api/discover", (req, res) => {
   });
 });
 
+// 🔧 TEST: Simple health check endpoint
+app.get("/api/health", (req, res) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.json({
+    success: true,
+    message: "Backend is running",
+    timestamp: new Date().toISOString(),
+    shopDomain: req.query.shopDomain || 'not provided',
+    databaseStatus: {
+      connected: mongoose.connection.readyState === 1,
+      readyState: mongoose.connection.readyState,
+      readyStateText: ['disconnected', 'connected', 'connecting', 'disconnecting'][mongoose.connection.readyState] || 'unknown'
+    }
+  });
+});
+
+// 🔧 TEST: Create a test timer for debugging
+app.post("/api/test/create-timer", async (req, res) => {
+  try {
+    const Timer = (await import("./backend/Model/TimerModel.js")).default;
+    
+    // Check if database is connected
+    if (mongoose.connection.readyState !== 1) {
+      console.error('❌ Database not connected. Ready state:', mongoose.connection.readyState);
+      return res.status(500).json({
+        success: false,
+        message: "Database connection error",
+        readyState: mongoose.connection.readyState
+      });
+    }
+    
+    // Create a test timer that expires in 1 hour
+    const now = new Date();
+    const endTime = new Date(now.getTime() + 60 * 60 * 1000); // 1 hour from now
+    
+    const testTimer = new Timer({
+      shopDomain: "helixo-machine-test.myshopify.com",
+      startDate: now,
+      endDate: endTime,
+      description: "🔥 Test Timer - Limited Time Offer! Don't miss out on this amazing deal!",
+      displayOptions: {
+        color: "#ff0000",
+        position: "top",
+        size: "medium"
+      },
+      urgencySettings: {
+        enableBanner: "color_pulse",
+        warningTimeMinutes: 5
+      }
+    });
+    
+    await testTimer.save();
+    
+    res.json({
+      success: true,
+      message: "Test timer created successfully",
+      timer: testTimer
+    });
+  } catch (error) {
+    console.error("Error creating test timer:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to create test timer",
+      error: error.message
+    });
+  }
+});
+
+// 🔧 TEST: Check existing timers for debugging
+app.get("/api/test/timers", async (req, res) => {
+  try {
+    const Timer = (await import("./backend/Model/TimerModel.js")).default;
+    const { shopDomain } = req.query;
+    
+    // Check if database is connected
+    if (mongoose.connection.readyState !== 1) {
+      console.error('❌ Database not connected. Ready state:', mongoose.connection.readyState);
+      return res.status(500).json({
+        success: false,
+        message: "Database connection error",
+        readyState: mongoose.connection.readyState
+      });
+    }
+    
+    const timers = await Timer.find({ shopDomain: shopDomain || "helixo-machine-test.myshopify.com" });
+    
+    res.json({
+      success: true,
+      count: timers.length,
+      timers: timers
+    });
+  } catch (error) {
+    console.error("Error fetching test timers:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch test timers",
+      error: error.message
+    });
+  }
+});
+
 // 🔧 FIX: App Proxy endpoint for theme extensions (helixo-timer)
 app.get("/helixo-timer/api/timers", async (req, res) => {
   // 🔧 FIX: Add CORS headers for App Proxy requests
@@ -84,6 +186,15 @@ app.get("/helixo-timer/api/timers", async (req, res) => {
     // Import Timer model
     const Timer = (await import("./backend/Model/TimerModel.js")).default;
     
+    // Check if database is connected
+    if (mongoose.connection.readyState !== 1) {
+      console.error('❌ Database not connected. Ready state:', mongoose.connection.readyState);
+      return res.status(500).json({ 
+        success: false, 
+        message: "Database connection error" 
+      });
+    }
+    
     // Find timers for the specific shop
     const timers = await Timer.find({ shopDomain });
     
@@ -100,6 +211,22 @@ app.get("/helixo-timer/api/timers", async (req, res) => {
       message: "Internal server error" 
     });
   }
+});
+
+// 🔧 TEST: App Proxy health check endpoint
+app.get("/helixo-timer/api/health", (req, res) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.json({
+    success: true,
+    message: "App Proxy is working",
+    timestamp: new Date().toISOString(),
+    shopDomain: req.query.shopDomain || 'not provided',
+    databaseStatus: {
+      connected: mongoose.connection.readyState === 1,
+      readyState: mongoose.connection.readyState,
+      readyStateText: ['disconnected', 'connected', 'connecting', 'disconnecting'][mongoose.connection.readyState] || 'unknown'
+    }
+  });
 });
 
 // 🔧 FIX: Public API endpoint for theme extensions (no authentication required)
@@ -127,6 +254,25 @@ app.get("/api/public/timers", async (req, res) => {
     
     // Import Timer model
     const Timer = (await import("./backend/Model/TimerModel.js")).default;
+    
+    // Check if database is connected
+    if (mongoose.connection.readyState !== 1) {
+      console.error('❌ Database not connected. Ready state:', mongoose.connection.readyState);
+      const errorResponse = { 
+        success: false, 
+        message: "Database connection error" 
+      };
+      
+      if (req.query.callback) {
+        // JSONP error response
+        res.set('Content-Type', 'application/javascript');
+        res.send(`${req.query.callback}(${JSON.stringify(errorResponse)});`);
+      } else {
+        // Regular JSON error response
+        res.status(500).json(errorResponse);
+      }
+      return;
+    }
     
     // Find timers for the specific shop
     const timers = await Timer.find({ shopDomain });

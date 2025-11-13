@@ -1,238 +1,43 @@
-// 🔧 PERMANENT SOLUTION: Vanilla JS Timer Widget
-// This widget loads timer data from the server and displays countdown timer on product pages
 
-console.log('🔧 Timer Widget Script Loading...');
+// 🔧 Timer Widget - Vanilla JS
+// Loads timer data from backend and displays countdown timer on product pages
 
 // CSS will be loaded by the Liquid template
 
-// 🔧 Auto-discovery system for backend URL
-async function discoverBackendURL() {
-  const knownPatterns = [
-    'bacteria-dns-te-becomes', // CURRENT ACTIVE URL
-    'hack-calculators-soap-evaluation',
-    'sean-possibly-pointed-married',
-    'nails-carlo-pgp-nylon',
-    'baking-edt-purpose-cited',
-    'howard-myself-finishing-pp',
-    'livecam-sensitivity-excellence-outlets',
-    'behind-lamp-exchanges-alaska', 
-    'wizard-md-linking-pic',
-    'victim-author-maintaining-register',
-    'cincinnati-aged-spice-obvious',
-    'ink-ceramic-ricky-airports',
-    'guided-handheld-carb-desire',
-    'libraries-ownership-written-enclosure'
+// 🔧 Timer Data Fetching - Simplified for localhost development
+async function fetchTimerData() {
+  const shopDomain = window.location.hostname;
+  
+  // Try localhost URLs (for local development)
+  const localhostUrls = [
+    'http://localhost:3001',
+    'http://127.0.0.1:3001',
+    'http://localhost:3000',
+    'http://127.0.0.1:3000'
   ];
   
-  console.log('🔍 Auto-discovering current backend URL...');
-  
-  // Try discovery endpoint first
-  for (const pattern of knownPatterns) {
-    const testUrl = `https://${pattern}.trycloudflare.com`;
+  for (const localUrl of localhostUrls) {
     try {
-      const response = await fetch(`${testUrl}/api/discover`, {
+      const response = await fetch(`${localUrl}/api/public/timers?shopDomain=${encodeURIComponent(shopDomain)}`, {
         method: 'GET',
         headers: { 'Content-Type': 'application/json' },
-        signal: AbortSignal.timeout(3000)
+        mode: 'cors',
+        signal: AbortSignal.timeout(5000)
       });
       
       if (response.ok) {
         const data = await response.json();
-        if (data.success && data.backendUrl) {
-          console.log(`✅ Found active backend: ${data.backendUrl}`);
-          return data.backendUrl;
+        if (data.success && data.timers) {
+          return data;
         }
       }
     } catch (error) {
-      console.log(`❌ ${testUrl} failed:`, error.message);
+      // Continue to next URL if this one fails
+      continue;
     }
   }
-  
-  // Fallback to direct API calls
-  for (const pattern of knownPatterns) {
-    const testUrl = `https://${pattern}.trycloudflare.com`;
-    try {
-      const shopDomain = window.location.hostname;
-      const response = await fetch(`${testUrl}/api/public/timers?shopDomain=${shopDomain}`, {
-        method: 'GET',
-        headers: { 'Content-Type': 'application/json' },
-        signal: AbortSignal.timeout(3000)
-      });
-      
-      if (response.ok) {
-        console.log(`✅ Found working backend: ${testUrl}`);
-        return testUrl;
-      }
-    } catch (error) {
-      console.log(`❌ ${testUrl} failed:`, error.message);
-    }
-  }
-  
-  return null;
-}
 
-// 🔧 PERMANENT SOLUTION: JSONP Timer Data Fetching (Bypasses CORS)
-function fetchTimerData() {
-  return new Promise((resolve, reject) => {
-    const shopDomain = window.location.hostname;
-    console.log('🔧 Starting timer data fetch for domain:', shopDomain);
-    
-    // First test App Proxy health endpoint
-    const appProxyHealthUrl = `https://${shopDomain}/apps/helixo-timer/api/health`;
-    console.log('🔍 Testing App Proxy health:', appProxyHealthUrl);
-    
-    fetch(`${appProxyHealthUrl}?shopDomain=${shopDomain}`, {
-      method: 'GET',
-      headers: { 'Content-Type': 'application/json' },
-      signal: AbortSignal.timeout(5000)
-    })
-    .then(response => {
-      if (response.ok) {
-        console.log('✅ App Proxy health check passed');
-        // Now try the actual timers endpoint
-        const appProxyUrl = `https://${shopDomain}/apps/helixo-timer/api/timers`;
-        console.log('🔍 Trying App Proxy URL:', appProxyUrl);
-        
-        return fetch(`${appProxyUrl}?shopDomain=${shopDomain}`, {
-          method: 'GET',
-          headers: { 'Content-Type': 'application/json' },
-          signal: AbortSignal.timeout(10000) // Increased timeout
-        });
-      } else {
-        throw new Error(`App Proxy health check failed: ${response.status}`);
-      }
-    })
-    .then(response => {
-      if (response.ok) {
-        return response.json();
-      }
-      throw new Error(`HTTP error! status: ${response.status}`);
-    })
-    .then(data => {
-      console.log('✅ App Proxy succeeded:', data);
-      resolve(data);
-    })
-    .catch(error => {
-      console.log('App Proxy failed:', error.message);
-      
-      // 🔧 PERMANENT SOLUTION: Try multiple backend URLs with JSONP
-      console.log('🔧 Trying JSONP approach...');
-      
-      // First try direct backend URL (current active URL)
-      const currentBackendUrl = 'https://bacteria-dns-te-becomes.trycloudflare.com';
-      console.log('🔧 Trying direct backend URL first:', currentBackendUrl);
-      
-      // Test direct backend health first
-      fetch(`${currentBackendUrl}/api/health?shopDomain=${shopDomain}`, {
-        method: 'GET',
-        headers: { 'Content-Type': 'application/json' },
-        signal: AbortSignal.timeout(5000)
-      })
-      .then(response => {
-        if (response.ok) {
-          console.log('✅ Direct backend health check passed');
-          return response.json();
-        } else {
-          throw new Error(`Direct backend health check failed: ${response.status}`);
-        }
-      })
-      .then(healthData => {
-        console.log('✅ Backend is healthy:', healthData);
-        // Continue with JSONP approach
-      })
-      .catch(error => {
-        console.log('❌ Direct backend health check failed:', error.message);
-        // Continue with JSONP approach
-      });
-      
-      const backendUrls = [
-        currentBackendUrl,
-        'https://hack-calculators-soap-evaluation.trycloudflare.com',
-        'https://look-supervision-extensive-jobs.trycloudflare.com',
-        'https://ecommerce-functions-soc-rugs.trycloudflare.com',
-        'https://sean-possibly-pointed-married.trycloudflare.com',
-        'https://nails-carlo-pgp-nylon.trycloudflare.com'
-      ];
-      
-      let urlIndex = 0;
-      
-      function tryNextUrl() {
-        if (urlIndex >= backendUrls.length) {
-          console.log('❌ All JSONP URLs failed, using mock data for testing');
-          // Provide mock data for testing
-          resolve({
-            success: true,
-            timers: [{
-              _id: "mock_timer_id",
-              shopDomain: shopDomain,
-              startDate: new Date().toISOString(),
-              endDate: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), // 24 hours from now
-              description: "🔥 Limited Time Offer! Don't miss out on this amazing deal!",
-              displayOptions: {
-                color: "#ff0000",
-                position: "top",
-                size: "medium"
-              },
-              urgencySettings: {
-                warningTimeMinutes: 5,
-                enableBanner: "color_pulse"
-              }
-            }]
-          });
-        return;
-        }
-        
-        const currentBackendUrl = backendUrls[urlIndex];
-        console.log(`🔧 Trying JSONP URL ${urlIndex + 1}/${backendUrls.length}:`, currentBackendUrl);
-        urlIndex++;
-        
-        // Create unique callback name
-        const callbackName = 'timerCallback_' + Date.now() + '_' + urlIndex;
-        
-        // Create script tag for JSONP
-        const script = document.createElement('script');
-        script.src = `${currentBackendUrl}/api/public/timers?shopDomain=${shopDomain}&callback=${callbackName}`;
-        
-        // Set up callback
-        window[callbackName] = function(data) {
-          console.log('✅ JSONP succeeded:', data);
-          resolve(data);
-          // Clean up
-          if (script.parentNode) {
-            document.head.removeChild(script);
-          }
-          delete window[callbackName];
-        };
-        
-        // Handle errors - try next URL
-        script.onerror = function() {
-          console.log(`❌ JSONP failed for ${currentBackendUrl}, trying next...`);
-          delete window[callbackName];
-          if (script.parentNode) {
-            document.head.removeChild(script);
-          }
-          tryNextUrl();
-        };
-        
-        // Add script to page
-        document.head.appendChild(script);
-        
-        // Timeout after 5 seconds for each URL
-        setTimeout(() => {
-          if (window[callbackName]) {
-            console.log(`❌ JSONP timeout for ${currentBackendUrl}`);
-            delete window[callbackName];
-            if (script.parentNode) {
-              document.head.removeChild(script);
-            }
-            tryNextUrl();
-          }
-        }, 5000);
-      }
-      
-      tryNextUrl();
-    });
-  });
+  throw new Error('Failed to fetch timer data from backend');
 }
 
 // 🔧 Vanilla JS Countdown Timer
@@ -271,7 +76,6 @@ class CountdownTimer {
     
     this.timeLeft = { days, hours, minutes, seconds };
     
-    // Check urgency (last 5 minutes)
     const urgencyThreshold = (this.timer.urgencySettings?.warningTimeMinutes || 5) * 60 * 1000;
     const isUrgent = timeDiff <= urgencyThreshold && timeDiff > 0;
     
@@ -298,7 +102,7 @@ class CountdownTimer {
       this.container.innerHTML = '<div class="timer-widget loading">Loading...</div>';
       return;
     }
-    
+
     const displayOptions = this.timer.displayOptions || {};
     const urgencyThreshold = (this.timer.urgencySettings?.warningTimeMinutes || 5) * 60 * 1000;
     const now = new Date();
@@ -311,7 +115,6 @@ class CountdownTimer {
            style="--timer-color: ${displayOptions.color || '#ffc107'}; --timer-size: ${displayOptions.size || 'medium'}">
     `;
     
-    // Urgency Banner
     if (isUrgent && this.timer.urgencySettings?.enableBanner) {
       html += `
         <div class="urgency-banner">
@@ -320,14 +123,12 @@ class CountdownTimer {
       `;
     }
     
-    // Timer Message
     html += `
       <div class="timer-message">
         ${this.timer.description || 'Special offer ends in:'}
       </div>
     `;
     
-    // Timer Display
     html += '<div class="timer-display">';
     
     if (this.timeLeft.days > 0) {
@@ -371,8 +172,6 @@ class TimerWidgetManager {
   constructor(container) {
     this.container = container;
     this.timerInstance = null;
-    this.loading = true;
-    this.error = null;
     
     this.init();
   }
@@ -383,30 +182,24 @@ class TimerWidgetManager {
     try {
       const data = await fetchTimerData();
       
-              if (data.success && data.timers && data.timers.length > 0) {
-          // Filter for active timers
-          const now = new Date();
-          const activeTimers = data.timers.filter(timer => {
-            const startDate = new Date(timer.startDate);
-            const endDate = new Date(timer.endDate);
-            return now >= startDate && now <= endDate;
-          });
-          
-          console.log(`Found ${data.timers.length} total timers, ${activeTimers.length} active`);
-          
-          if (activeTimers.length > 0) {
-            this.showTimer(activeTimers[0]);
-          } else {
-            console.log('No active timers found, showing expired message');
-            this.showError('No active timers found');
-          }
-        } else {
-          console.log('No timers available in database');
-          this.showError('No timers available');
+      if (data?.success && Array.isArray(data.timers) && data.timers.length > 0) {
+        const now = new Date();
+        const activeTimers = data.timers.filter(timer => {
+          const startDate = new Date(timer.startDate);
+          const endDate = new Date(timer.endDate);
+          return now >= startDate && now <= endDate;
+        });
+        
+        if (activeTimers.length > 0) {
+          this.showTimer(activeTimers[0]);
+          return;
         }
+      }
+
+      this.hideContainer();
     } catch (err) {
-      console.error('Failed to load timer:', err);
-      this.showError('Failed to load timer data');
+      console.error('Timer widget error:', err);
+      this.hideContainer();
     }
   }
   
@@ -414,17 +207,17 @@ class TimerWidgetManager {
     this.container.innerHTML = '<div class="timer-widget loading">⏰ Loading countdown...</div>';
   }
   
-  showError(message) {
-    this.container.innerHTML = `<div class="timer-widget error">${message}</div>`;
+  hideContainer() {
+    this.container.innerHTML = '';
+    this.container.style.display = 'none';
   }
   
   showTimer(timerData) {
-    // Clean up existing timer
     if (this.timerInstance) {
       this.timerInstance.destroy();
     }
     
-    // Create new timer
+    this.container.style.display = '';
     this.timerInstance = new CountdownTimer(this.container, timerData);
   }
   
@@ -436,22 +229,25 @@ class TimerWidgetManager {
 }
 
 // 🔧 Initialize the widget when DOM is ready
+let initialized = false;
+
 function initializeTimerWidget() {
-  console.log('🔧 Initializing timer widget...');
+  // Prevent multiple initializations
+  if (initialized) return;
   
-  // Find all timer containers on the page
   const timerContainers = document.querySelectorAll('[id^="countdown-timer-"]');
-  console.log('🔧 Found timer containers:', timerContainers.length);
   
   if (timerContainers.length > 0) {
-    // Initialize widget in each container
     timerContainers.forEach(container => {
-      console.log('🔧 Initializing timer widget in:', container.id);
-      new TimerWidgetManager(container);
+      // Check if already initialized
+      if (!container.dataset.timerInitialized) {
+        container.dataset.timerInitialized = 'true';
+        new TimerWidgetManager(container);
+      }
     });
+    initialized = true;
   } else {
-    // Fallback: create a default container if none found
-    console.log('🔧 No timer containers found, creating default');
+    // Create default container if none found
     let timerContainer = document.getElementById('countdown-timer-widget');
     
     if (!timerContainer) {
@@ -459,7 +255,6 @@ function initializeTimerWidget() {
       timerContainer.id = 'countdown-timer-widget';
       timerContainer.className = 'countdown-timer-container';
       
-      // Insert into product page
       const productForm = document.querySelector('.product-form') || 
                          document.querySelector('.product__info') ||
                          document.querySelector('.product-single__info');
@@ -467,32 +262,26 @@ function initializeTimerWidget() {
       if (productForm) {
         productForm.insertBefore(timerContainer, productForm.firstChild);
       } else {
-        // Fallback: append to body
         document.body.appendChild(timerContainer);
       }
     }
     
-    // Initialize the widget
-    new TimerWidgetManager(timerContainer);
+    if (!timerContainer.dataset.timerInitialized) {
+      timerContainer.dataset.timerInitialized = 'true';
+      new TimerWidgetManager(timerContainer);
+      initialized = true;
+    }
   }
 }
 
-// Try multiple initialization approaches
+// Initialize once when DOM is ready
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', initializeTimerWidget);
 } else {
-  // DOM is already loaded, initialize immediately
   initializeTimerWidget();
 }
 
-// Also try after a short delay as backup
-setTimeout(initializeTimerWidget, 100);
-
-// 🔧 Export for potential external use
+// Expose for manual initialization if needed
 window.TimerWidgetManager = TimerWidgetManager;
 window.CountdownTimer = CountdownTimer;
 window.initializeTimerWidget = initializeTimerWidget;
-
-// Auto-initialize when script loads
-console.log('🔧 Timer Widget Script loaded, auto-initializing...');
-initializeTimerWidget();

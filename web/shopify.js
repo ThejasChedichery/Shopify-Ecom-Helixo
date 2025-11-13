@@ -2,6 +2,14 @@ import { BillingInterval, LATEST_API_VERSION } from "@shopify/shopify-api";
 import { shopifyApp } from "@shopify/shopify-app-express";
 import { SQLiteSessionStorage } from "@shopify/shopify-app-session-storage-sqlite";
 import { restResources } from "@shopify/shopify-api/rest/admin/2024-10";
+import dotenv from "dotenv";
+import { join, dirname } from "path";
+import { fileURLToPath } from "url";
+
+// 🔧 FIX: Load .env file before reading environment variables
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+dotenv.config({ path: join(__dirname, '.env') });
 
 const DB_PATH = `${process.cwd()}/database.sqlite`;
 

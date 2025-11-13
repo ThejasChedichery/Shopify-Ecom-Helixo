@@ -1,10 +1,15 @@
-import { join } from "path";
+import { join, dirname } from "path";
 import { readFileSync } from "fs";
+import { fileURLToPath } from "url";
 import express from "express";
 import serveStatic from "serve-static";
 import dotenv from "dotenv";
 import mongoose from "mongoose";
-dotenv.config();
+
+// 🔧 FIX: Load .env file from the web directory
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+dotenv.config({ path: join(__dirname, '.env') });
 
 import shopify from "./shopify.js";
 import PrivacyWebhookHandlers from "./privacy.js";
